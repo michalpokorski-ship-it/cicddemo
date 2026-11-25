@@ -15,3 +15,44 @@ jobs:
           persist-credentials: false
       - name: Run unit tests
         run: python3 -m unittest -v
+  package:
+    if: github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Package immutable candidate
+        run: |
+          mkdir -p dist
+          tar -czf dist/customer-portal.tar.gz portal.py test_portal.py
+          cd dist
+          sha256sum customer-portal.tar.gz > SHA256SUMS
+          printf '%s\n' "$GITHUB_SHA" > COMMIT_SHA
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+  deploy-test:
+    if: github.event_name == 'push'
+    needs: package
+    runs-on: ubuntu-latest
+    environment: TEST
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate-${{ github.sha }}
+          path: dist
+      - name: Verify artifact and simulate TEST deployment
+        run: |
+          cd dist
+          sha256sum -c SHA256SUMS
+          test "$(cat COMMIT_SHA)" = "$GITHUB_SHA"
+          mkdir -p "$RUNNER_TEMP/test-app"
+          tar -xzf customer-portal.tar.gz -C "$RUNNER_TEMP/test-app"
+          cd "$RUNNER_TEMP/test-app"
+          python3 -m unittest -v
+          echo 'Simulated TEST deployment successful'
