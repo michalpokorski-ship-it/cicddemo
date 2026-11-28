@@ -1,5 +1,5 @@
 import unittest
-from portal import register_customer, update_profile
+from portal import register_customer, update_profile, recovery_confirmation
 
 class RegistrationTests(unittest.TestCase):
     def test_registration(self):
@@ -27,6 +27,9 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(original["name"], "Old")
         with self.assertRaises(ValueError):
             update_profile(original, " ")
+
+    def test_recovery_confirmation_is_generic(self):
+        self.assertEqual(recovery_confirmation("known@example.test"), recovery_confirmation("unknown@example.test"))
 
 if __name__ == "__main__":
     unittest.main()
