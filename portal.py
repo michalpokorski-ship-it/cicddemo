@@ -8,3 +8,8 @@ def register_customer(name: str, email: str) -> dict:
             or "." not in domain or any(not part for part in domain.split("."))):
         raise ValueError("Name and a valid email are required")
     return {"name": name, "email": email, "status": "registered"}
+
+
+def dashboard_state(records: list) -> dict:
+    return {"empty": not records, "count": len(records),
+            "message": "No records yet" if not records else "Records available"}
