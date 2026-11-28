@@ -10,6 +10,13 @@ def register_customer(name: str, email: str) -> dict:
     return {"name": name, "email": email, "status": "registered"}
 
 
+def update_profile(profile: dict, name: str) -> dict:
+    name = name.strip()
+    if not name:
+        raise ValueError("Name is required")
+    return {**profile, "name": name}
+
+
 def dashboard_state(records: list) -> dict:
     return {"empty": not records, "count": len(records),
             "message": "No records yet" if not records else "Records available"}
