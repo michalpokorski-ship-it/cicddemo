@@ -1,0 +1,39 @@
+name: Validate Jira DEMO status configuration
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/jira-validate-statuses.yml'
+permissions: {}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+    steps:
+      - name: Verify status configuration (read only)
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+          base = "https://api.atlassian.com/ex/jira/4036b126-1d24-4aec-911a-d958aa2b1942/rest/api/3"
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, *args):
+                  return None
+          opener = urllib.request.build_opener(NoRedirect())
+          req = urllib.request.Request(base + "/project/DEMO/statuses", headers={"Authorization": "Bearer " + os.environ["JIRA_API_TOKEN"], "Accept": "application/json"})
+          try:
+              with opener.open(req, timeout=20) as res:
+                  data = json.load(res)
+          except urllib.error.HTTPError as e:
+              raise SystemExit(f"Jira request failed: HTTP {e.code}")
+          expected = {"3", "10010", "10016", "10007", "10011", "10009", "10013", "10015", "10014"}
+          if not isinstance(data, list) or not data:
+              raise SystemExit("No issue type status data")
+          for issue_type in data:
+              actual = {str(status["id"]) for status in issue_type["statuses"]}
+              if actual != expected:
+                  raise SystemExit("Unexpected status set; review Jira configuration")
+          print("DEMO status configuration verified for all returned issue types")
+          PY
