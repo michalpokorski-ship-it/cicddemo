@@ -1,5 +1,5 @@
 import unittest
-from portal import register_customer
+from portal import register_customer, dashboard_state
 
 class RegistrationTests(unittest.TestCase):
     def test_registration(self):
@@ -20,6 +20,10 @@ class RegistrationTests(unittest.TestCase):
             with self.subTest(email=email):
                 with self.assertRaises(ValueError):
                     register_customer("Demo", email)
+
+    def test_dashboard_empty_state(self):
+        self.assertEqual(dashboard_state([]), {"empty": True, "count": 0, "message": "No records yet"})
+        self.assertFalse(dashboard_state([{"id": 1}])["empty"])
 
 if __name__ == "__main__":
     unittest.main()
