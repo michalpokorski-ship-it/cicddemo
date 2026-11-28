@@ -10,6 +10,13 @@ def register_customer(name: str, email: str) -> dict:
     return {"name": name, "email": email, "status": "registered"}
 
 
+def update_profile(profile: dict, name: str) -> dict:
+    name = name.strip()
+    if not name:
+        raise ValueError("Name is required")
+    return {**profile, "name": name}
+
+
 def dashboard_preferences(theme: str, page_size: int) -> dict:
     if theme not in {"light", "dark"} or page_size not in {10, 25, 50}:
         raise ValueError("Unsupported dashboard preference")
