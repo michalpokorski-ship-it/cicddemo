@@ -8,3 +8,9 @@ def register_customer(name: str, email: str) -> dict:
             or "." not in domain or any(not part for part in domain.split("."))):
         raise ValueError("Name and a valid email are required")
     return {"name": name, "email": email, "status": "registered"}
+
+
+def dashboard_preferences(theme: str, page_size: int) -> dict:
+    if theme not in {"light", "dark"} or page_size not in {10, 25, 50}:
+        raise ValueError("Unsupported dashboard preference")
+    return {"theme": theme, "page_size": page_size}
