@@ -1,0 +1,41 @@
+name: Jira connection test
+on:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+    steps:
+      - name: Verify Jira read access and permissions
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error
+          token = os.environ.get("JIRA_API_TOKEN")
+          if not token:
+              raise SystemExit("Missing JIRA_API_TOKEN secret")
+          base = "https://api.atlassian.com/ex/jira/4036b126-1d24-4aec-911a-d958aa2b1942/rest/api/3"
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+          opener = urllib.request.build_opener(NoRedirect())
+          def get(path):
+              request = urllib.request.Request(base + path, headers={"Authorization": "Bearer " + token, "Accept": "application/json"})
+              try:
+                  with opener.open(request, timeout=20) as response:
+                      return json.load(response)
+              except urllib.error.HTTPError as error:
+                  raise SystemExit(f"Jira request failed: HTTP {error.code}")
+          project = get("/project/DEMO")
+          if project.get("key") != "DEMO" or str(project.get("id")) != "10002":
+              raise SystemExit("Unexpected project identity")
+          print("Jira DEMO read access: OK")
+          result = get("/mypermissions?permissions=ADMINISTER,ADMINISTER_PROJECTS&projectKey=DEMO")
+          for key in ("ADMINISTER", "ADMINISTER_PROJECTS"):
+              allowed = result.get("permissions", {}).get(key, {}).get("havePermission", False)
+              print(f"{key}: {allowed}")
+          print("Read-only test complete")
+          PY
