@@ -14,5 +14,12 @@ class RegistrationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             register_customer("Demo", "invalid")
 
+    def test_malformed_email_addresses(self):
+        for email in ("@example.test", "user@@example.test", "user@example",
+                      "u ser@example.test", "user@.test", "user@example..test"):
+            with self.subTest(email=email):
+                with self.assertRaises(ValueError):
+                    register_customer("Demo", email)
+
 if __name__ == "__main__":
     unittest.main()
