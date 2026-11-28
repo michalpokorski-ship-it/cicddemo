@@ -1,5 +1,5 @@
 import unittest
-from portal import register_customer
+from portal import register_customer, dashboard_preferences
 
 class RegistrationTests(unittest.TestCase):
     def test_registration(self):
@@ -20,6 +20,11 @@ class RegistrationTests(unittest.TestCase):
             with self.subTest(email=email):
                 with self.assertRaises(ValueError):
                     register_customer("Demo", email)
+
+    def test_dashboard_preferences(self):
+        self.assertEqual(dashboard_preferences("dark", 25), {"theme": "dark", "page_size": 25})
+        with self.assertRaises(ValueError):
+            dashboard_preferences("unknown", 25)
 
 if __name__ == "__main__":
     unittest.main()
