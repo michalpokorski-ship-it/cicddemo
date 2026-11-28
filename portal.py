@@ -26,3 +26,8 @@ def dashboard_preferences(theme: str, page_size: int) -> dict:
     if theme not in {"light", "dark"} or page_size not in {10, 25, 50}:
         raise ValueError("Unsupported dashboard preference")
     return {"theme": theme, "page_size": page_size}
+
+
+def dashboard_state(records: list) -> dict:
+    return {"empty": not records, "count": len(records),
+            "message": "No records yet" if not records else "Records available"}
