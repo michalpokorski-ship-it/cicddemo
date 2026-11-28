@@ -8,3 +8,10 @@ def register_customer(name: str, email: str) -> dict:
             or "." not in domain or any(not part for part in domain.split("."))):
         raise ValueError("Name and a valid email are required")
     return {"name": name, "email": email, "status": "registered"}
+
+
+def update_profile(profile: dict, name: str) -> dict:
+    name = name.strip()
+    if not name:
+        raise ValueError("Name is required")
+    return {**profile, "name": name}

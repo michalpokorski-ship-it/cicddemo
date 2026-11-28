@@ -1,5 +1,5 @@
 import unittest
-from portal import register_customer
+from portal import register_customer, update_profile
 
 class RegistrationTests(unittest.TestCase):
     def test_registration(self):
@@ -20,6 +20,13 @@ class RegistrationTests(unittest.TestCase):
             with self.subTest(email=email):
                 with self.assertRaises(ValueError):
                     register_customer("Demo", email)
+
+    def test_profile_update(self):
+        original = {"name": "Old", "email": "user@example.test"}
+        self.assertEqual(update_profile(original, " New "), {"name": "New", "email": "user@example.test"})
+        self.assertEqual(original["name"], "Old")
+        with self.assertRaises(ValueError):
+            update_profile(original, " ")
 
 if __name__ == "__main__":
     unittest.main()
