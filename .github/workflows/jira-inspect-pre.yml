@@ -1,15 +1,19 @@
-name: Inspect Ready for PRE dependencies
+name: Validate Jira DEMO status configuration
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/jira-inspect-pre.yml'
 permissions: {}
 jobs:
-  inspect:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
       JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
     steps:
-      - name: Inspect workflow dependencies (read only)
+      - name: Verify status configuration (read only)
         run: |
           python3 - <<'PY'
           import json, os, urllib.request, urllib.error
@@ -18,13 +22,18 @@ jobs:
               def redirect_request(self, *args):
                   return None
           opener = urllib.request.build_opener(NoRedirect())
-          for path in ["/statuses/10012/projectUsages", "/statuses/10012/workflowUsages"]:
-              req = urllib.request.Request(base + path, headers={"Authorization": "Bearer " + os.environ["JIRA_API_TOKEN"], "Accept": "application/json"})
-              try:
-                  with opener.open(req, timeout=20) as res:
-                      data = json.load(res)
-                      print(path, json.dumps(data))
-              except urllib.error.HTTPError as e:
-                  print(path, "HTTP", e.code)
-                  raise SystemExit(1)
+          req = urllib.request.Request(base + "/project/DEMO/statuses", headers={"Authorization": "Bearer " + os.environ["JIRA_API_TOKEN"], "Accept": "application/json"})
+          try:
+              with opener.open(req, timeout=20) as res:
+                  data = json.load(res)
+          except urllib.error.HTTPError as e:
+              raise SystemExit(f"Jira request failed: HTTP {e.code}")
+          expected = {"3", "10010", "10016", "10007", "10011", "10009", "10013", "10015", "10014"}
+          if not isinstance(data, list) or not data:
+              raise SystemExit("No issue type status data")
+          for issue_type in data:
+              actual = {str(status["id"]) for status in issue_type["statuses"]}
+              if actual != expected:
+                  raise SystemExit("Unexpected status set; review Jira configuration")
+          print("DEMO status configuration verified for all returned issue types")
           PY
