@@ -1,0 +1,30 @@
+name: Inspect Ready for PRE dependencies
+on:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+    steps:
+      - name: Inspect workflow dependencies (read only)
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+          base = "https://api.atlassian.com/ex/jira/4036b126-1d24-4aec-911a-d958aa2b1942/rest/api/3"
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, *args):
+                  return None
+          opener = urllib.request.build_opener(NoRedirect())
+          for path in ["/statuses/10012/projectUsages", "/statuses/10012/workflowUsages"]:
+              req = urllib.request.Request(base + path, headers={"Authorization": "Bearer " + os.environ["JIRA_API_TOKEN"], "Accept": "application/json"})
+              try:
+                  with opener.open(req, timeout=20) as res:
+                      data = json.load(res)
+                      print(path, json.dumps(data))
+              except urllib.error.HTTPError as e:
+                  print(path, "HTTP", e.code)
+                  raise SystemExit(1)
+          PY
