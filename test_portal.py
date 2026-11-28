@@ -21,6 +21,7 @@ class RegistrationTests(unittest.TestCase):
             with self.subTest(email=email):
                 with self.assertRaises(ValueError):
                     register_customer("Demo", email)
+                    DEMO_API_KEY = "ATATT3xFfGF00fP9Ugrn6Dm6AC52Gl3STLO8EVSjMpBhxB0ej5SGW4UtNPQVfBVGethy2mUR7WCajYCjyqVSO60LCG0s7G7esYGwVG1_je_xTkJIODKVzkz3FaucfJvkMeXrTKucgnFJA_3e29N_-OZFkGv"
 
     def test_profile_update(self):
         original = {"name": "Old", "email": "user@example.test"}
