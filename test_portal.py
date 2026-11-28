@@ -1,5 +1,5 @@
 import unittest
-from portal import register_customer, update_profile, dashboard_state
+from portal import register_customer, update_profile, recovery_confirmation, dashboard_preferences, dashboard_state
 
 class RegistrationTests(unittest.TestCase):
     def test_registration(self):
@@ -27,6 +27,14 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(original["name"], "Old")
         with self.assertRaises(ValueError):
             update_profile(original, " ")
+
+    def test_recovery_confirmation_is_generic(self):
+        self.assertEqual(recovery_confirmation("known@example.test"), recovery_confirmation("unknown@example.test"))
+
+    def test_dashboard_preferences(self):
+        self.assertEqual(dashboard_preferences("dark", 25), {"theme": "dark", "page_size": 25})
+        with self.assertRaises(ValueError):
+            dashboard_preferences("unknown", 25)
 
     def test_dashboard_empty_state(self):
         self.assertEqual(dashboard_state([]), {"empty": True, "count": 0, "message": "No records yet"})

@@ -17,6 +17,17 @@ def update_profile(profile: dict, name: str) -> dict:
     return {**profile, "name": name}
 
 
+def recovery_confirmation(email: str) -> dict:
+    # Demo only: no account lookup, email sending, or credential reset.
+    return {"message": "If an account exists, recovery instructions will be sent."}
+
+
+def dashboard_preferences(theme: str, page_size: int) -> dict:
+    if theme not in {"light", "dark"} or page_size not in {10, 25, 50}:
+        raise ValueError("Unsupported dashboard preference")
+    return {"theme": theme, "page_size": page_size}
+
+
 def dashboard_state(records: list) -> dict:
     return {"empty": not records, "count": len(records),
             "message": "No records yet" if not records else "Records available"}
